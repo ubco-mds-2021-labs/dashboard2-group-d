@@ -13,49 +13,50 @@ library(gridExtra)
 
 ###################    DATA MANIPULATION      ################################################################################################
 
-path <- '2015_2021-quarterly-surgical_wait_times.xlsx'
+path <- '/home/saisree/Desktop/Labs/Block5/551-visualization/milestone3/dashboard2-group-d/final_filtered.xlsx'
 qdata <- read_excel(path)
 
-# Cleaned column names
-colnames(qdata) <- tolower(colnames(qdata))
-qdata <- qdata %>%
-  rename(year = fiscal_year,
-         hospital = hospital_name,
-         procedure = procedure_group,
-         wait_time_50 = completed_50th_percentile,
-         wait_time_90 = completed_90th_percentile)
-
-#convert <5 string to median value of 3
-qdata <- mutate_if(qdata, is.character, str_replace_all, pattern = "<5", replacement = "3")
-
-# correct datatypes of columns, simplify fiscal year to year at start of first quarter
-qdata$waiting <- as.numeric(qdata$waiting)
-qdata$completed <- as.numeric(qdata$completed)
-qdata$year <- qdata$year %>% str_replace('(/).*', "")
-
-
-# correct datatypes of columns, simplify fiscal year to year at start of first quarter
-qdata$waiting <- as.numeric(qdata$waiting)
-qdata$completed <- as.numeric(qdata$completed)
-qdata$year <- qdata$year %>% str_replace('(/).*', "")
-
-clean <- qdata %>% 
-  drop_na() 
-
-count <- select(qdata, -wait_time_50, -wait_time_90)
-
-main <- clean %>%
-  filter(procedure != 'All Procedures', 
-         hospital != 'All Facilities',
-         health_authority != 'All Health Authorities')
-count <- count %>%
-  filter(procedure != 'All Procedures', 
-         hospital != 'All Facilities',
-         health_authority != 'All Health Authorities')
-all <-  clean %>% 
-  filter(procedure == 'All Procedures', 
-         hospital == 'All Facilities',
-         health_authority == 'All Health Authorities') 
+print(qdata)
+# # Cleaned column names
+# colnames(qdata) <- tolower(colnames(qdata))
+# qdata <- qdata %>%
+#   rename(year = fiscal_year,
+#          hospital = hospital_name,
+#          procedure = procedure_group,
+#          wait_time_50 = completed_50th_percentile,
+#          wait_time_90 = completed_90th_percentile)
+# 
+# #convert <5 string to median value of 3
+# qdata <- mutate_if(qdata, is.character, str_replace_all, pattern = "<5", replacement = "3")
+# 
+# # correct datatypes of columns, simplify fiscal year to year at start of first quarter
+# qdata$waiting <- as.numeric(qdata$waiting)
+# qdata$completed <- as.numeric(qdata$completed)
+# qdata$year <- qdata$year %>% str_replace('(/).*', "")
+# 
+# 
+# # correct datatypes of columns, simplify fiscal year to year at start of first quarter
+# qdata$waiting <- as.numeric(qdata$waiting)
+# qdata$completed <- as.numeric(qdata$completed)
+# qdata$year <- qdata$year %>% str_replace('(/).*', "")
+# 
+# clean <- qdata %>% 
+#   drop_na() 
+# 
+# count <- select(qdata, -wait_time_50, -wait_time_90)
+# 
+# main <- clean %>%
+#   filter(procedure != 'All Procedures', 
+#          hospital != 'All Facilities',
+#          health_authority != 'All Health Authorities')
+# count <- count %>%
+#   filter(procedure != 'All Procedures', 
+#          hospital != 'All Facilities',
+#          health_authority != 'All Health Authorities')
+# all <-  clean %>% 
+#   filter(procedure == 'All Procedures', 
+#          hospital == 'All Facilities',
+#          health_authority == 'All Health Authorities') 
 
 
 recent <- main %>% 
