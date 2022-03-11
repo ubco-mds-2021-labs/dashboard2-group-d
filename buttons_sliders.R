@@ -5,9 +5,6 @@ app <- dash_app()
 
 # Set the layout of the app
 
-
-#year <- to_vec(for (x in seq("2007","2022")) paste(x,"=",x) )
-
 # year slider
 yr_slider <- htmlDiv(
   list(
