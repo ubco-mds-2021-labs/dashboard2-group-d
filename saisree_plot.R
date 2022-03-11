@@ -10,6 +10,9 @@ library(lubridate)
 library(stringr)
 library(reshape2)
 library(gridExtra)
+library(dashBootstrapComponents)
+library(ggplot2)
+library(plotly)
 
 ###################    DATA MANIPULATION      ################################################################################################
 
@@ -40,22 +43,49 @@ all <-  clean %>%
          hospital == 'All Facilities',
          health_authority == 'All Health Authorities')
 
-recent <- main %>% 
-  filter(year >= 2017)
-
-
-authority <- count_recent %>% 
-  group_by(health_authority, year, quarter) %>% 
-  summarise(total_waiting = sum(waiting), total_completed = sum(completed)) %>% 
-  arrange(desc(total_waiting))
-
-no_cataract <- recent %>% 
+no_cataract <- main %>% 
   filter(procedure != 'Cataract Surgery')  
 
-filtering_procedures <- function(health_authority,year){
+filtering_procedures <- function(health_authority,year,pace){
+  check_year <- no_cataract %>% pull(year) %>% unique()
   
+  no_cataract %>% filter(health_authority==health_authority,year>=year[1],year<=year[2])
+  # by procedure group
+  procedure <- no_cataract %>% 
+    group_by(procedure, year, quarter) %>% 
+    summarise(wait_time_50 = mean(wait_time_50), wait_time_90 = mean(wait_time_90)) %>% 
+    arrange(desc(wait_time_90))
+  
+  procedure_unite <- procedure %>% 
+    unite(time, year, quarter, sep = "")
+  
+  procedure_order <- procedure_unite %>% group_by(procedure) %>% summarize(mean_wait_time_90_procedure=round(mean(wait_time_90),2)) %>% arrange(mean_wait_time_90_procedure) 
+  fastest <- head(procedure_order,5)
+  slowest <- tail(procedure_order,5)
+  result  <- fastest
+  if(pace=="Slowest"){
+    print("here")
+    result <- slowest
+  }
+  result
 }
 
+procedure_plots <- function(health_authority,year,pace){
+  result <- filtering_procedures(health_authority,year,pace)
+  print(result)
+  fastest_plot <- 
+    ggplot(result, aes(y = procedure, x = mean_wait_time_90_procedure,fill=procedure))+ 
+    geom_bar(stat="identity",show.legend=FALSE,alpha=0.6)+
+    scale_fill_manual(values=c("steelblue3","gold3","black","navyblue","grey"))+
+    geom_text(aes(label = mean_wait_time_90_procedure), hjust = 2,color="black")+
+    labs(x = "Wait Time (weeks)",title="Fastest/Slowest Treated Procedures")+               
+    theme_classic()+
+    theme(axis.text=element_text(size=10),
+          title=element_text(size=12),
+          axis.title=element_text(size=10)       
+          )
+  fastest_plot
+}
 
 app <- dash_app()
 
@@ -102,7 +132,8 @@ ha_buttons <- htmlDiv(
 
 app %>% set_layout(list(
   yr_slider,
-  ha_buttons
+  ha_buttons,
+  dccGraph(figure=ggplotly(procedure_plots("Interior",c(2017,2022),"Fastest")))
 )
 )
 
