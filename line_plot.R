@@ -1,6 +1,34 @@
 library(dash)
 library(dashHtmlComponents)
 
+library(tidyverse)
+library(readxl)
+library(hexbin)
+library(ggthemes)
+library(repr)
+library(lubridate)
+library(stringr)
+library(reshape2)
+library(gridExtra)
+
+# read the data
+# path <- '2009_2021-quarterly-surgical_wait_times.xlsx'
+qdata <- read_excel("/Users/alicesong/A-gitmds/551/551project/dashboard2-group-d/data/2009_2021-quarterly-surgical_wait_times.xlsx")
+head(qdata,2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 app <- dash_app()
 
 # Set the layout of the app
