@@ -128,7 +128,7 @@ ha_buttons <- htmlDiv(
   )
 )
 
-#health_authority buttons
+#pace buttons
 pace_button <- htmlDiv(
   list(
     dccDropdown(
