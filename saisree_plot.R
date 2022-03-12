@@ -46,11 +46,11 @@ all <-  clean %>%
 no_cataract <- main %>% 
   filter(procedure != 'Cataract Surgery')  
 
-filtering_procedures <- function(health_authority,year,pace){
-  check_year <- no_cataract %>% pull(year) %>% unique()
+filtering_procedures <- function(ha_authority,yr,pace){
+  no_cataract<-no_cataract %>% filter(health_authority==ha_authority,year>=yr[1], year<=yr[2]) 
   
-  no_cataract %>% filter(health_authority==health_authority,year>=year[1],year<=year[2])
-  # by procedure group
+  
+  # by procedure group 
   procedure <- no_cataract %>% 
     group_by(procedure, year, quarter) %>% 
     summarise(wait_time_50 = mean(wait_time_50), wait_time_90 = mean(wait_time_90)) %>% 
@@ -64,7 +64,6 @@ filtering_procedures <- function(health_authority,year,pace){
   slowest <- tail(procedure_order,5)
   result  <- fastest
   if(pace=="Slowest"){
-    print("here")
     result <- slowest
   }
   result
@@ -72,8 +71,8 @@ filtering_procedures <- function(health_authority,year,pace){
 
 procedure_plots <- function(health_authority,year,pace){
   result <- filtering_procedures(health_authority,year,pace)
-  print(result)
-  fastest_plot <- 
+  
+  pace_plot <- 
     ggplot(result, aes(y = procedure, x = mean_wait_time_90_procedure,fill=procedure))+ 
     geom_bar(stat="identity",show.legend=FALSE,alpha=0.6)+
     scale_fill_manual(values=c("steelblue3","gold3","black","navyblue","grey"))+
@@ -84,7 +83,7 @@ procedure_plots <- function(health_authority,year,pace){
           title=element_text(size=12),
           axis.title=element_text(size=10)       
           )
-  fastest_plot
+  pace_plot
 }
 
 app <- dash_app()
@@ -96,8 +95,8 @@ yr_slider <- htmlDiv(
   list(
     dccRangeSlider(
       id="year_slider",
-      min = 2009,
-      max = 2022,
+      min = 2015,
+      max = 2021,
       marks=list(
         "2015" = "2015",
         "2016" = "2016",
@@ -105,11 +104,10 @@ yr_slider <- htmlDiv(
         "2018" = "2018",
         "2019" = "2019",
         "2020" = "2020",
-        "2021" = "2021",
-        "2022" = "2022"
+        "2021" = "2021"
       ),
       step=1,
-      value=list(2017,2022)
+      value=list(2018,2021)
     )
   )
 )
@@ -130,11 +128,46 @@ ha_buttons <- htmlDiv(
   )
 )
 
+#health_authority buttons
+pace_button <- htmlDiv(
+  list(
+    dccDropdown(
+      id="pace_dropdown",
+      options = list(list(label = "Fastest", value = "Fastest"),
+                     list(label = "Slowest", value = "Slowest")),
+      value = 'Fastest'
+    )
+  )
+)
+
+
+app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP) 
+
 app %>% set_layout(list(
   yr_slider,
   ha_buttons,
-  dccGraph(figure=ggplotly(procedure_plots("Interior",c(2017,2022),"Fastest")))
+  pace_button,
+  dccGraph(id="procedure-graph")
 )
+)
+app$callback(
+  output('procedure-graph', 'figure'),
+  list(input("health_authority_buttons","value"),input('year_slider', 'value'),input("pace_dropdown","value")),
+  function(ha_authority="Interior",yr=c(2018,2021),pace="Fastest") {
+    result <- filtering_procedures(ha_authority,yr,pace)
+    pace_plot <- 
+      ggplot(result, aes(y = procedure, x = mean_wait_time_90_procedure,fill=procedure))+ 
+      geom_bar(stat="identity",show.legend=FALSE,alpha=0.6)+
+      scale_fill_manual(values=c("steelblue3","gold3","black","navyblue","grey"))+
+      geom_text(aes(label = mean_wait_time_90_procedure), hjust = 2,color="black")+
+      labs(x = "Wait Time (weeks)",title="Fastest/Slowest Treated Procedures")+               
+      theme_classic()+
+      theme(axis.text=element_text(size=10),
+            title=element_text(size=12),
+            axis.title=element_text(size=10)       
+      )
+    ggplotly(pace_plot)
+  }
 )
 
 
