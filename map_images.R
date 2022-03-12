@@ -57,9 +57,28 @@ ha_buttons <- htmlDiv(
 
 
 
-###### Map data and plot ##############
-map <- function(authority = "interior"){
-  img = readImage('data/images/fraser.png')
+###### Map data and plot #########################
+map <- function(authority = "Interior"){
+  
+  if(authority == "Interior"){
+    img = readImage('data/images/interior.png')
+  }
+  if(authority == "Fraser"){
+    img = readImage('data/images/fraser.png')
+  }
+  if(authority == "Vancouver Coastal"){
+    img = readImage('data/images/vancoastal.png')
+  }
+  if(authority == "Vancouver Island"){
+    img = readImage('data/images/vanisland.png')
+  }
+  if(authority == "Northern"){
+    img = readImage('data/images/northern.png')
+  }
+  if(authority == "Provincial Health Services Authority"){
+    img = readImage('data/images/provincial.png')
+  }
+  
   map_plot <- plot_ly() %>%
     layout(
       images = list(
@@ -77,13 +96,16 @@ map <- function(authority = "interior"){
     )
   return(map_plot)
 }
+#################################################
 
-map(authority = "interior")
+# map object 
+map_object <- map("Interior")
+
 
 app %>% set_layout(list(
   yr_slider,
   ha_buttons,
-  dccGraph(figure = map(authority = "interior"))
+  dccGraph(figure = map_object)
 )
 )
   
