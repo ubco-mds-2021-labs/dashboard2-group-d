@@ -4,8 +4,8 @@ library(tidyverse)
 library(devtools)
 library(dashCoreComponents)
 library(dashHtmlComponents)
-#library(dash-bootstrap-components)
-library(png)
+library(OpenImageR)
+#library(png)
 #library(patchwork)  
 #library(base64enc)
 
@@ -105,10 +105,54 @@ map_object <- map("Interior")
 app %>% set_layout(list(
   yr_slider,
   ha_buttons,
-  dccGraph(figure = map_object)
+  dccGraph(id = "map-bc")
 )
 )
   
+
+
+####### Call back for map ###################################
+app$callback(
+  output('map-bc', 'figure'),
+  list(input("health_authority_buttons","value")),
+  function(authority = "Interior"){
+    if(authority == "Interior"){
+      img = readImage('data/images/interior.png')
+    }
+    if(authority == "Fraser"){
+      img = readImage('data/images/fraser.png')
+    }
+    if(authority == "Vancouver Coastal"){
+      img = readImage('data/images/vancoastal.png')
+    }
+    if(authority == "Vancouver Island"){
+      img = readImage('data/images/vanisland.png')
+    }
+    if(authority == "Northern"){
+      img = readImage('data/images/northern.png')
+    }
+    if(authority == "Provincial Health Services Authority"){
+      img = readImage('data/images/provincial.png')
+    }
+    
+    map_plot <- plot_ly() %>%
+      layout(
+        images = list(
+          source = raster2uri(as.raster(img)),
+          x = 0, y = 0, 
+          sizex = 4, sizey = 4,
+          xref = "x", yref = "y",
+          xanchor = "left", yanchor = "bottom"
+          #sizing = "stretch"
+        ),
+        xaxis=list(showticklabels=FALSE, zerolinecolor = '#ffff', showgrid = F),
+        yaxis=list(showticklabels=FALSE, zerolinecolor = '#ffff', showgrid = F),
+        xaxis = list(showgrid = FALSE),
+        yaxis = list(showgrid = FALSE)
+      )
+    return(map_plot)
+  }
+)
 
 
 app %>% run_app()
