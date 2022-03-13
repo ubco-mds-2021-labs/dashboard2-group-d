@@ -55,12 +55,13 @@ for(i in hosp_list){
   new_list <- append(new_list, list(sublist))
 }
 
-no_cataract <- no_cataract %>% filter(health_authority==health_authority,year>=year[1],year<=year[2])
+#no_cataract <- no_cataract %>% filter(health_authority==health_authority,year>=year[1],year<=year[2])
 
-hosp_data <- function(health_authority, year, hosp){
-  no_cataract <- no_cataract %>% filter(health_authority==health_authority,year>=year[1],year<=year[2])
+# prapare 4th-plot data
+hosp_data <- function(authority, years, hosp){
+  hosp_data_a_y_h <- no_cataract %>% filter(health_authority==authority,year>=years[1],year<=years[2])
 
-  hospital_data <- no_cataract %>% 
+  hospital_data <- hosp_data_a_y_h %>% 
       group_by(hospital, year, quarter) %>% 
       summarise(total_waiting = sum(waiting), total_completed = sum(completed)) %>% 
       unite(time, year, quarter, sep = "") %>%
@@ -71,21 +72,27 @@ hosp_data <- function(health_authority, year, hosp){
 
 }
 
-# wait_complete_plot <- function(health_authority, year, hosp){
-#   one_hosp_data <- hosp_data(health_authority, year, hosp)
-  
-#   wc_plot <- 
-#       ggplot(one_hosp_data, aes(x = time, y = value, fill = variable))+ 
-#           geom_bar(stat = "identity", position = 'dodge') +
-#           labs(y = "", x = 'Time', title = "Total waiting and completed cases", fill = "") +
-#           theme(text = element_text(size=16), 
-#                 axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-#                 legend.position="top")
 
-#   wc_plot
-#}
+# 4-th plot function
+ wait_complete_plot <- function(health_authority, year, hosp){
+   one_hosp_data <- hosp_data(health_authority, year, hosp)
+   wc_plot <- 
+       ggplot(one_hosp_data, aes(x = time, y = value, fill = variable))+ 
+           geom_bar(stat = "identity", position = 'dodge') +
+           labs(y = "", x = 'Time', title = "Total waiting and completed cases", fill = "") +
+           theme(text = element_text(size=16), 
+                 axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+                 legend.position="top")
+   return(ggplotly(wc_plot))
+}
 
-app <- dash_app()
+app <- dash_app(suppress_callback_exceptions = TRUE)
+
+# 4th plot - waiting and completed 
+#comp_prop_graphic <- comp_prop_plot(c(2017,2020), 'Fraser')
+wait_complete_graphic <- wait_complete_plot('Interior', c(2017,2020), "Kelowna General Hospital")
+plot4 <- dccGraph(id = 'wait_complete_plot4', figure=wait_complete_graphic)
+
 
 # year slider
 yr_slider <- htmlDiv(
@@ -143,25 +150,18 @@ app %>% set_layout(list(
   yr_slider,
   ha_buttons,
   hosp_drop,
-  dccGraph(id = "wait_complete")
+  plot4
+#  dccGraph(id = "wait_complete")
 )
 )
 
 app$callback(
-  output("wait_complete", "figure"),
+  output("wait_complete_plot4", "figure"),
   list(input("health_authority_buttons", "value"),
        input("year_slider", "value"),
        input("hosp_drop", "value")),
-  function(health_authority="Interior", year=c(2017,2022), hospital="Kelowna General Hospital") {
-    one_hosp_data <- hosp_data(health_authority, year, hospital)
-    wc_plot <- 
-      ggplot(one_hosp_data, aes(x = time, y = value, fill = variable))+ 
-          geom_bar(stat = "identity", position = 'dodge') +
-          labs(y = "", x = 'Time', title = "Total waiting and completed cases", fill = "") +
-          theme(text = element_text(size=16), 
-                axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-                legend.position="top")
-    ggplotly(wc_plot)
+  function(health_authority, year, hospital) {
+    return(wait_complete_plot(health_authority, year, hospital))
   }
 )
 
