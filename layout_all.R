@@ -22,7 +22,7 @@ library(gridExtra)
 # setwd("~/A-gitmds/551/551project/dashboard2-group-d")
 
 ####### read the data
-qdata <- read_csv("qdata_2015_2022.csv", col_select=c(2:10))
+qdata <- read_csv("data/qdata_2015_2022.csv", col_select=c(2:10))
 qdata$year <- as.integer(qdata$year)
 
 ####### data manipulation
