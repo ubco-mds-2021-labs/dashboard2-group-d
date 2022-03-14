@@ -105,8 +105,8 @@ for(i in hosp_list){
 }
 
 # data for 4th plot
-hosp_data <- function(authority, years, hosp){
-  hosp_data_a_y_h <- no_cataract %>% filter(health_authority==authority,year>=years[1],year<=years[2])
+hosp_data <- function(years, hosp){
+  hosp_data_a_y_h <- no_cataract %>% filter(year>=years[1],year<=years[2])
   
   hospital_data <- hosp_data_a_y_h %>% 
     group_by(hospital, year, quarter) %>% 
@@ -206,17 +206,14 @@ procedure_plots <- function(health_authority,year,pace){
 }
 
 # 4th plot function
-wait_complete_plot <- function(health_authority, year, hosp){
-  one_hosp_data <- hosp_data(health_authority, year, hosp)
+wait_complete_plot <- function(year, hosp){
+  one_hosp_data <- hosp_data(year, hosp)
   wc_plot <- 
     ggplot(one_hosp_data, aes(x = time, y = value, fill = variable))+ 
     geom_bar(stat = "identity", position = 'dodge') +
-    labs(y = "", x = 'Time'
-#         , title = "Total waiting and completed cases", fill = ""
-         ) +
-    theme(text = element_text(size=16), 
-          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-          legend.position="top")
+    labs(y = "", x = 'Time in YearQuarter') +
+    theme(legend.position="top",
+    axis.text.x=element_blank())
   return(ggplotly(wc_plot))
 }
 
@@ -294,7 +291,7 @@ hosp_drop <- htmlDiv(
   )
 )
 #4th plot
-wait_complete_graphic <- wait_complete_plot('Interior', c(2017,2020), "Kelowna General Hospital")
+wait_complete_graphic <- wait_complete_plot(c(2017,2020), "Kelowna General Hospital")
 plot4 <- dccGraph(id = 'wait_complete_plot4', figure=wait_complete_graphic)
 
 
@@ -635,11 +632,10 @@ app$callback(
 ### 4th plot - callback
 app$callback(
   output("wait_complete_plot4", "figure"),
-  list(input("health_authority_buttons", "value"),
-       input("year_slider", "value"),
+  list(input("year_slider", "value"),
        input("hosp_drop", "value")),
-  function(health_authority, year, hospital) {
-    return(wait_complete_plot(health_authority, year, hospital))
+  function(year, hospital) {
+    return(wait_complete_plot(year, hospital))
   }
 )
 
