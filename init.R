@@ -50,3 +50,5 @@ install.packages('gridExtra')
 install.packages('OpenImageR')
 
 remotes::install_github('plotly/dashR', upgrade=TRUE)
+remotes::install_github('facultyai/dash-bootstrap-components@r-release')
+
