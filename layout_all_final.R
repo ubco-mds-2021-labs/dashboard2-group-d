@@ -17,6 +17,7 @@ library(lubridate)
 library(stringr)
 library(reshape2)
 library(gridExtra)
+library(OpenImageR)
 
 ####### Set current directory as working directory
 # setwd("~/A-gitmds/551/551project/dashboard2-group-d")
@@ -51,7 +52,7 @@ no_cataract <- main %>%
 
 ############## data manipulation - 1st plot
 
-# groupby authority, year, quarter (hospitals and procedures are merged)
+# data with complete ratio in specific authority and specific year
 
 comppropdata <- function(years, authority){
   qdata <- qdata %>% filter( (year>=years[1] & year<=years[2]) & (health_authority==authority))
@@ -67,46 +68,6 @@ comppropdata <- function(years, authority){
   authority_comp_prop
 }
 
-############## data manipulation and plot - 2nd map
-
-map <- function(authority = "Interior"){
-  
-  if(authority == "Interior"){
-    img = readImage('data/images/interior.png')
-  }
-  if(authority == "Fraser"){
-    img = readImage('data/images/fraser.png')
-  }
-  if(authority == "Vancouver Coastal"){
-    img = readImage('data/images/vancoastal.png')
-  }
-  if(authority == "Vancouver Island"){
-    img = readImage('data/images/vanisland.png')
-  }
-  if(authority == "Northern"){
-    img = readImage('data/images/northern.png')
-  }
-  if(authority == "Provincial Health Services Authority"){
-    img = readImage('data/images/provincial.png')
-  }
-
-  map_plot <- plot_ly() %>%
-    layout(
-      images = list(
-        source = raster2uri(as.raster(img)),
-        x = 0, y = 0, 
-        sizex = 4, sizey = 4,
-        xref = "x", yref = "y",
-        xanchor = "left", yanchor = "bottom"
-        #sizing = "stretch"
-      ),
-      xaxis=list(showticklabels=FALSE, zerolinecolor = '#ffff',showgrid = F),
-      yaxis=list(showticklabels=FALSE, zerolinecolor = '#ffff', showgrid = F),
-      xaxis = list(showgrid = FALSE),
-      yaxis = list(showgrid = FALSE)
-    )
-  return(map_plot)
-}
 
 
 ############## data manipulation - 3rd plot
@@ -181,6 +142,49 @@ comp_prop_plot <- function(years, authority){
   return(ggplotly(compprop_plot))
 }
 
+
+# 2nd map function
+map <- function(authority = "Interior"){
+  
+  if(authority == "Interior"){
+    img = readImage('data/images/interior.png')
+  }
+  if(authority == "Fraser"){
+    img = readImage('data/images/fraser.png')
+  }
+  if(authority == "Vancouver Coastal"){
+    img = readImage('data/images/vancoastal.png')
+  }
+  if(authority == "Vancouver Island"){
+    img = readImage('data/images/vanisland.png')
+  }
+  if(authority == "Northern"){
+    img = readImage('data/images/northern.png')
+  }
+  if(authority == "Provincial Health Services Authority"){
+    img = readImage('data/images/provincial.png')
+  }
+  
+  map_plot <- plot_ly() %>%
+    layout(
+      images = list(
+        source = raster2uri(as.raster(img)),
+        x = 0, y = 0,
+        sizex = 4, sizey = 4,
+        xref = "x", yref = "y",
+        xanchor = "left", yanchor = "bottom"
+        #sizing = "stretch"
+      ),
+      xaxis=list(showticklabels=FALSE, zerolinecolor = '#ffff',showgrid = F),
+      yaxis=list(showticklabels=FALSE, zerolinecolor = '#ffff', showgrid = F),
+      xaxis = list(showgrid = FALSE),
+      yaxis = list(showgrid = FALSE)
+    )
+  return(map_plot)
+}
+
+
+
 # 3rd plot function
 procedure_plots <- function(health_authority,year,pace){
   result <- filtering_procedures(health_authority,year,pace)
@@ -220,12 +224,14 @@ wait_complete_plot <- function(health_authority, year, hosp){
 ####### card functions
 
 wait_cases_count <- function(years, authority){
+  authority_comp_prop <- comppropdata(years, authority)
   waitcases <- authority_comp_prop %>% filter( (year>=years[1] & year<=years[2]) & (health_authority==authority))
   totalwaitcases <- sum(waitcases$total_waiting)
   return(totalwaitcases)
 }
 
 completed_cases_count <- function(years, authority){
+  authority_comp_prop <- comppropdata(years, authority)
   completecases <- authority_comp_prop %>% filter( (year>=years[1] & year<=years[2]) & (health_authority==authority))
   totalcompletecases <- sum(completecases$total_completed)
   return(totalcompletecases)
@@ -254,6 +260,11 @@ wait_90_mean <- function(years, authority){
 ## 1st plot - proportion of completed cases
 comp_prop_graphic <- comp_prop_plot(c(2017,2020), 'Fraser')
 plot1 <- dccGraph(id = 'prop_plot1', figure=comp_prop_graphic)
+
+## 2nd map - authorities
+map_graphic <- map("Interior")
+plot2 <- dccGraph(id = 'map-bc', figure=map_graphic)
+
 
 ## 3rd plot - Fastest and Slowest procedures
 #pace buttons
@@ -453,7 +464,7 @@ col2_row1 <- div(list(
 
 # This row has top 2 top two plots
 top_left_plot <- dbcRow(plot1)
-top_right_plot <- dbcRow(dccGraph(id = "map-bc"))
+top_right_plot <- dbcRow(plot2)
 
 col2_row2 <- div(list(
   dbcRow(list(
@@ -554,49 +565,60 @@ app$callback(
 )
 
 ### 2nd map - callback
-
 app$callback(
   output('map-bc', 'figure'),
-  list(input("health_authority_buttons","value")),
-  function(authority = "Interior"){
-    if(authority == "Interior"){
-      img = readImage('data/images/interior.png')
-    }
-    if(authority == "Fraser"){
-      img = readImage('data/images/fraser.png')
-    }
-    if(authority == "Vancouver Coastal"){
-      img = readImage('data/images/vancoastal.png')
-    }
-    if(authority == "Vancouver Island"){
-      img = readImage('data/images/vanisland.png')
-    }
-    if(authority == "Northern"){
-      img = readImage('data/images/northern.png')
-    }
-    if(authority == "Provincial Health Services Authority"){
-      img = readImage('data/images/provincial.png')
-    }
-    
-    map_plot <- plot_ly() %>%
-      layout(
-        images = list(
-          source = raster2uri(as.raster(img)),
-          x = 0, y = 0, 
-          sizex = 4, sizey = 4,
-          xref = "x", yref = "y",
-          xanchor = "left", yanchor = "bottom"
-          #sizing = "stretch"
-        ),
-        xaxis=list(showticklabels=FALSE, zerolinecolor = '#ffff', showgrid = F),
-        yaxis=list(showticklabels=FALSE, zerolinecolor = '#ffff', showgrid = F),
-        xaxis = list(showgrid = FALSE),
-        yaxis = list(showgrid = FALSE)
-      )
-    return(map_plot)
+  list(input('health_authority_buttons', 'value')),
+  function(authority) {
+    return(map(authority))
   }
 )
 
+
+
+# 
+# 
+# app$callback(
+#   output('map-bc', 'figure'),
+#   list(input("health_authority_buttons","value")),
+#   function(authority = "Interior"){
+#     if(authority == "Interior"){
+#       img = readImage('data/images/interior.png')
+#     }
+#     if(authority == "Fraser"){
+#       img = readImage('data/images/fraser.png')
+#     }
+#     if(authority == "Vancouver Coastal"){
+#       img = readImage('data/images/vancoastal.png')
+#     }
+#     if(authority == "Vancouver Island"){
+#       img = readImage('data/images/vanisland.png')
+#     }
+#     if(authority == "Northern"){
+#       img = readImage('data/images/northern.png')
+#     }
+#     if(authority == "Provincial Health Services Authority"){
+#       img = readImage('data/images/provincial.png')
+#     }
+# 
+#     map_plot <- plot_ly() %>%
+#       layout(
+#         images = list(
+#           source = raster2uri(as.raster(img)),
+#           x = 0, y = 0,
+#           sizex = 4, sizey = 4,
+#           xref = "x", yref = "y",
+#           xanchor = "left", yanchor = "bottom"
+#           #sizing = "stretch"
+#         ),
+#         xaxis=list(showticklabels=FALSE, zerolinecolor = '#ffff', showgrid = F),
+#         yaxis=list(showticklabels=FALSE, zerolinecolor = '#ffff', showgrid = F),
+#         xaxis = list(showgrid = FALSE),
+#         yaxis = list(showgrid = FALSE)
+#       )
+#     return(map_plot)
+#   }
+# )
+# 
 
 
 ### 3rd plot - callback
