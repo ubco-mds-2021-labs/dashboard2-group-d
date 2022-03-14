@@ -19,7 +19,7 @@ library(gridExtra)
 
 # read the data
 # path <- '2009_2021-quarterly-surgical_wait_times.xlsx'
-qdata_2015_2022 <- read_csv("/Users/alicesong/A-gitmds/551/551project/dashboard2-group-d/data/qdata_2015_2022.csv", col_select=c(2:10))
+qdata_2015_2022 <- read_csv("qdata_2015_2022.csv", col_select=c(2:10))
 # head(qdata_2015_2022,2)
 
 # groupby authority, year, quarter
