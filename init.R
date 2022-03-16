@@ -50,7 +50,7 @@ install.packages('lubridate')
 install.packages('stringr')
 install.packages('reshape2')
 install.packages('gridExtra')
-install.packages('OpenImageR')
+#install.packages('OpenImageR')
 
 install.packages("dplyr")
 install.packages("usmap")

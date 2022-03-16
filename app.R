@@ -17,7 +17,7 @@ library(lubridate)
 library(stringr)
 library(reshape2)
 library(gridExtra)
-library(OpenImageR)
+#library(OpenImageR)
 
 library(EBImage)
 library(usmap)
