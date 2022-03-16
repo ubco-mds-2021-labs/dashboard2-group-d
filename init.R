@@ -13,9 +13,11 @@ options(repos=r)
 # library(dashHtmlComponents)
 # library(dashCoreComponents)
 # library(dashBootstrapComponents)
+
 # library(devtools)
 # library(ggplot2)
 # library(plotly)
+
 # library(tidyverse)
 # library(readxl)
 # library(hexbin)
@@ -30,11 +32,12 @@ options(repos=r)
 
 # packages go here
 install.packages('remotes')
+remotes::install_github('plotly/dashR', upgrade=TRUE)
 
 install.packages('dash')
 install.packages('dashHtmlComponents')
 install.packages('dashCoreComponents')
-install.packages('dashBootstrapComponents')
+#install.packages('dashBootstrapComponents')
 install.packages('devtools')
 install.packages('ggplot2')
 install.packages('plotly')
@@ -49,6 +52,14 @@ install.packages('reshape2')
 install.packages('gridExtra')
 install.packages('OpenImageR')
 
-remotes::install_github('plotly/dashR', upgrade=TRUE)
+install.packages("dplyr")
+install.packages("usmap")
+
+install.packages("BiocManager")
+BiocManager::install("EBImage")
+
+
+
+library(devtools)
 remotes::install_github('facultyai/dash-bootstrap-components@r-release')
 
