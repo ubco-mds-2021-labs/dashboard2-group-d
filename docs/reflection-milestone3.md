@@ -11,7 +11,6 @@ We have chosen to document the outcomes of each meeting in Slack for clarity of 
 
 ## Pending Improvements:
 - create a dynamic map of BC that highlights the chosen health authority (without needing to replace static images)
-- finalize positioning of scorecards
 - use colour coding in and around plots to match the health authority colour
 - resize and reshape dashboard items to improve the overall appearance of the dashboard
 - improve the font and other minor aesthetics (i.e. font size/type/colour, line width/colour, etc.)
